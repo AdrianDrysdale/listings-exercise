@@ -101,6 +101,11 @@ class SavedSearch extends Model
     /**
      * Create at most one alert per user for a listing that has just become live.
      * When multiple saved searches match, the earliest search wins the link.
+     *
+     * Runs synchronously for this slice. If saved-search volume grows, the
+     * ListingObserver should dispatch a job that calls this (or a SQL/chunked
+     * variant) instead of invoking it inline — then fan out notify jobs per
+     * new alert. See NOTES.md ("Queues").
      */
     public static function createAlertsForLiveListing(Listing $listing): void
     {
@@ -110,6 +115,8 @@ class SavedSearch extends Model
 
         $listing->loadMissing('branch');
 
+        // Fine for a small table; at scale narrow candidates in SQL and/or
+        // chunk by user_id inside a queued job rather than loading everything.
         /** @var Collection<int, SavedSearch> $searches */
         $searches = static::query()->orderBy('id')->get();
 

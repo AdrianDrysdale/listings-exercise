@@ -11,6 +11,7 @@ class ListingObserver
     public function created(Listing $listing): void
     {
         if ($listing->status === ListingStatus::Live) {
+            // Sync for now; at scale: MatchListingToSavedSearches::dispatch($listing).
             SavedSearch::createAlertsForLiveListing($listing);
         }
     }
@@ -27,6 +28,7 @@ class ListingObserver
             return;
         }
 
+        // Sync for now; at scale: MatchListingToSavedSearches::dispatch($listing).
         SavedSearch::createAlertsForLiveListing($listing);
     }
 }
