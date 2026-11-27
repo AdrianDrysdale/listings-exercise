@@ -24,13 +24,15 @@ const form = ref({
     max_price: props.filters.max_price ?? '',
 });
 
-function search() {
+function criteriaPayload() {
     // Blank fields are dropped rather than sent empty, so the URL stays clean.
-    const query = Object.fromEntries(
+    return Object.fromEntries(
         Object.entries(form.value).filter(([, value]) => value !== '' && value !== null),
     );
+}
 
-    router.get('/', query, {
+function search() {
+    router.get('/', criteriaPayload(), {
         preserveState: true,
         preserveScroll: true,
         replace: true,
@@ -45,6 +47,19 @@ function reset() {
     form.value = { property_type: '', region: '', min_bedrooms: '', max_price: '' };
     search();
 }
+
+function saveSearch() {
+    const payload = criteriaPayload();
+
+    if (Object.keys(payload).length === 0) {
+        return;
+    }
+
+    router.post('/saved-searches', payload, {
+        onStart: () => (processing.value = true),
+        onFinish: () => (processing.value = false),
+    });
+}
 </script>
 
 <template>
@@ -58,6 +73,7 @@ function reset() {
             :processing="processing"
             @submit="search"
             @reset="reset"
+            @save="saveSearch"
         />
 
         <p class="mb-4 text-sm text-slate-500" aria-live="polite">

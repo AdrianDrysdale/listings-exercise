@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Listing;
+use App\Observers\ListingObserver;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,5 +26,7 @@ class AppServiceProvider extends ServiceProvider
         // envelope around every resource just gets in the way. Paginated
         // collections keep their data/links/meta structure regardless.
         JsonResource::withoutWrapping();
+
+        Listing::observe(ListingObserver::class);
     }
 }
